@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.decorators.cache import cache_page
 from django.contrib.auth import get_user_model
 
 from .forms import PostForm, CommentForm
@@ -11,6 +12,7 @@ from .utils import get_page_obj
 User = get_user_model()
 
 
+@cache_page(20)
 def index(request: HttpRequest) -> HttpResponse:
     """Отображение главной страницы"""
     posts = Post.objects.select_related('author', 'group').all()
