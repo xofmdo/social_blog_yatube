@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
 
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 from .models import Group, Post, User
 from .utils import get_page_obj
 
@@ -47,8 +47,12 @@ def post_detail(request, post_id) -> HttpResponse:
     """ Детали поста"""
     group = Post.objects.select_related('group')
     post = get_object_or_404(group, id=post_id)
+    comments = post.comments.select_related('author')
+    comments_form = CommentForm(request.POST)
     context = {
         'post': post,
+        'comments': comments,
+        'form': comments_form
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -71,14 +75,12 @@ def post_create(request: HttpRequest) -> HttpResponse:
 def post_edit(request: HttpRequest, post_id: int) -> HttpResponse:
     """ Редактирование поста"""
     post = get_object_or_404(Post, pk=post_id)
-    if post.author_id != request.user.id:
+    if post.author != request.user:
         return redirect('posts:post_detail', post_id=post_id)
-    if request.method != 'POST':
-        form = PostForm(instance=post)
-        return render(request, 'posts/create_post.html',
-                      context={'form': form, 'is_edit': True})
+
     form = PostForm(
-        request.POST,
+        request.POST or None,
+        files=request.FILES or None,
         instance=post
     )
     if form.is_valid():
@@ -88,7 +90,18 @@ def post_edit(request: HttpRequest, post_id: int) -> HttpResponse:
         'post': post,
         'form': form,
         'is_edit': True,
-        'username': request.user,
     }
     return render(request, 'posts/create_post.html',
                   context=context)
+
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    form = CommentForm(request.POST or None)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('posts:post_detail', post_id=post_id)

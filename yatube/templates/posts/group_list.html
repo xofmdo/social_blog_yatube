@@ -1,31 +1,18 @@
 {% extends 'base.html' %}
-
 {% block title %}
-  <title>{{ group }}</title>
+  Записи сообщества {{ group.title }}
 {% endblock %}
-
 {% block content %}
   <div class="container py-5">
-    <h1>{{ group }}</h1>
-    <p>
-      {{ group.description }}
-    </p>
+    <h1>{{ group.title }}</h1>
+    {% if post.description %}
+        <p>{{ group.description|linebreaks }}</p>
+    {% else %}
+        <span style="color:black">Описания группы нет</span>
+    {% endif %}
     {% for post in page_obj %}
-      <article>
-        <ul>
-          <li>
-            Автор: <a href="{% url 'posts:profile' post.author.username %}"> {{ post.author.get_full_name }}</a>
-          </li>
-          <li>
-            Дата публикации: {{ post.pub_date|date:'d E Y' }}
-          </li>
-        </ul>
-        <p>{{ post.text|linebreaksbr }}</p>
-        {% if not forloop.last %}
-          <hr>
-        {% endif %}
-      </article>
+    {% include 'posts/includes/post_card.html' %}
     {% endfor %}
-    {% include 'includes/paginator.html' %}
+    {% include 'posts/includes/paginator.html' %}
   </div>
 {% endblock %}

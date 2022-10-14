@@ -1,33 +1,17 @@
 {% extends 'base.html' %}
-
-{% block title %}
-  <title>Последние обновления на сайте</title>
-{% endblock %}
-
+{% load cache %}
+{% block title %}Последние обновления на сайте{% endblock %}
 {% block content %}
   <div class="container py-5">
+    {% comment %}
+        {% cache 20 index_page %}
+        {% include 'posts/includes/switcher.html' %}
+    {% endcomment %}
     <h1>Последние обновления на сайте</h1>
-    <article>
-      {% for post in page_obj %}
-        <ul>
-          <li>
-           Автор: <a href="{% url 'posts:profile' post.author.username %}"> {{ post.author.get_full_name }}</a>
-          </li>
-          <li>
-            Дата публикации: {{ post.pub_date|date:'d E Y' }}
-          </li>
-        </ul>
-        <p>
-          {{ post.text }}
-        </p>
-        {% if post.group %}
-          <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
-    </article>
-      {% endif %}
-      {% if not forloop.last %}
-        <hr>
-      {% endif %}
-      {% endfor %}
-      {% include 'includes/paginator.html' %}
+    {% for post in page_obj %}
+      {% include 'posts/includes/post_card.html' %}
+    {% endfor %}
+    {% include 'posts/includes/paginator.html' %}
+    {% comment %}{% endcache %}{% endcomment %}
   </div>
 {% endblock %}

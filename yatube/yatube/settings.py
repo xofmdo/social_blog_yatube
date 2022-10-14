@@ -25,7 +25,12 @@ SECRET_KEY = 'i)v7g)eo2)l)&1nvq!l#um6bj4i_gu636hwya#+(fr5(#7cq0*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    'testserver',
+]
 
 
 # Application definition
@@ -41,6 +46,8 @@ INSTALLED_APPS = [
     'users',
     'core',
     'debug_toolbar',
+    'sorl.thumbnail',
+
 ]
 
 MIDDLEWARE = [
@@ -142,5 +149,7 @@ INTERNAL_IPS = [
 ]
 
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

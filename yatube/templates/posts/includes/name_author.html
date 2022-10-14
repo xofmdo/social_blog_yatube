@@ -1,0 +1,5 @@
+{% if post.author.first_name|length > 1 %}
+    Автор: <a href="{% url 'posts:profile' post.author %}">{{ post.author.get_full_name }}</a>
+{% else %}
+    Автор: <a href="{% url 'posts:profile' post.author %}">{{ post.author.username }}</a>
+{% endif %}
