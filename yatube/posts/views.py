@@ -5,7 +5,7 @@ from django.views.decorators.cache import cache_page
 from django.contrib.auth import get_user_model
 
 from .forms import PostForm, CommentForm
-from .models import Group, Post, User
+from .models import Group, Post, User, Follow
 from .utils import get_page_obj
 
 
@@ -34,13 +34,15 @@ def group_list(request: HttpRequest, slug: str) -> HttpResponse:
     return render(request, 'posts/group_list.html', context=context)
 
 
-def profile(request: HttpRequest, username: str) -> HttpResponse:
-    """ Профиль пользователя"""
+def profile(request, username):
     author = get_object_or_404(User, username=username)
-    posts = author.posts.select_related('author')
+    posts = author.posts.select_related('group')
+    following = request.user.is_authenticated and (Follow.objects.filter(
+        user=request.user, author=author).exists())
     context = {
         'author': author,
         'page_obj': get_page_obj(request, posts),
+        'following': following,
     }
     return render(request, 'posts/profile.html', context)
 
@@ -107,3 +109,27 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
+
+
+@login_required
+def follow_index(request):
+    posts = Post.objects.filter(author__following__user=request.user)
+    context = {
+        'page_obj': get_page_obj(request, posts),
+    }
+    return render(request, 'posts/follow.html', context)
+
+
+@login_required
+def profile_follow(request, username):
+    author = get_object_or_404(User, username=username)
+    if author != request.user:
+        Follow.objects.get_or_create(user=request.user, author=author)
+    return redirect('posts:profile', username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    Follow.objects.filter(
+        user=request.user, author__username=username).delete()
+    return redirect('posts:profile', username)
