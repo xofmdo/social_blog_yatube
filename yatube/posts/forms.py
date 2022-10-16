@@ -5,6 +5,7 @@ from .models import Post, Comment
 
 
 class PostForm(ModelForm):
+    """Форма для создания поста."""
     class Meta:
         model = Post
         fields = ('text', 'group', 'image')

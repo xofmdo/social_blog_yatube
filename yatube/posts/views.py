@@ -8,7 +8,6 @@ from .forms import PostForm, CommentForm
 from .models import Group, Post, User, Follow
 from .utils import get_page_obj
 
-
 User = get_user_model()
 
 
@@ -34,7 +33,8 @@ def group_list(request: HttpRequest, slug: str) -> HttpResponse:
     return render(request, 'posts/group_list.html', context=context)
 
 
-def profile(request, username):
+def profile(request: HttpRequest, username: str) -> HttpResponse:
+    """ Отображение профиля пользователя"""
     author = get_object_or_404(User, username=username)
     posts = author.posts.select_related('group')
     following = request.user.is_authenticated and (Follow.objects.filter(
@@ -47,7 +47,7 @@ def profile(request, username):
     return render(request, 'posts/profile.html', context)
 
 
-def post_detail(request, post_id) -> HttpResponse:
+def post_detail(request: HttpRequest, post_id: int) -> HttpResponse:
     """ Детали поста"""
     group = Post.objects.select_related('group')
     post = get_object_or_404(group, id=post_id)
@@ -100,7 +100,8 @@ def post_edit(request: HttpRequest, post_id: int) -> HttpResponse:
 
 
 @login_required
-def add_comment(request, post_id):
+def add_comment(request: HttpRequest, post_id: int) -> HttpResponse:
+    """Добавление комментария к посту"""
     post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
@@ -112,7 +113,9 @@ def add_comment(request, post_id):
 
 
 @login_required
-def follow_index(request):
+def follow_index(request: HttpRequest) -> HttpResponse:
+    """Возвращает страницу с постами авторов, на которых подписан
+        пользователь."""
     posts = Post.objects.filter(author__following__user=request.user)
     context = {
         'page_obj': get_page_obj(request, posts),
@@ -121,7 +124,8 @@ def follow_index(request):
 
 
 @login_required
-def profile_follow(request, username):
+def profile_follow(request: HttpRequest, username: str) -> HttpResponse:
+    """Добавление подписки на автора."""
     author = get_object_or_404(User, username=username)
     if author != request.user:
         Follow.objects.get_or_create(user=request.user, author=author)
@@ -129,7 +133,8 @@ def profile_follow(request, username):
 
 
 @login_required
-def profile_unfollow(request, username):
+def profile_unfollow(request: HttpRequest, username: str) -> HttpResponse:
+    """Удаление автора из подписок."""
     Follow.objects.filter(
         user=request.user, author__username=username).delete()
     return redirect('posts:profile', username)

@@ -7,6 +7,7 @@ MAX_LENGTH = 15
 
 
 class Group(models.Model):
+    """Модель для создания группы."""
     title = models.CharField(
         max_length=200,
         verbose_name='Название группы'
@@ -22,6 +23,7 @@ class Group(models.Model):
 
 
 class Post(models.Model):
+    """Модель для создания поста."""
     text = models.TextField(
         verbose_name='Текст поста',
         help_text='Введите текст поста'
@@ -61,6 +63,7 @@ class Post(models.Model):
 
 
 class Comment(models.Model):
+    """Модель для создания комментария к посту."""
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
@@ -92,6 +95,7 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
+    """Модель для создания подписки на автора."""
     user = models.ForeignKey(
         User,
         verbose_name='Подписчик',
@@ -105,14 +109,7 @@ class Follow(models.Model):
         related_name='following'
     )
 
-    class Follow(models.Model):
-        user = models.ForeignKey(
-            User, on_delete=models.CASCADE, related_name='follower',
-            verbose_name='Подписчик')
-        author = models.ForeignKey(User, on_delete=models.CASCADE,
-                                   related_name='following', verbose_name='Автор')
-
-        class Meta:
-            ordering = ('author',)
-            verbose_name = 'Подписка'
-            verbose_name_plural = 'Подписки'
+    class Meta:
+        ordering = ('author',)
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
